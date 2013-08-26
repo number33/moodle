@@ -7939,3 +7939,64 @@ class admin_setting_configmultiselect_modules extends admin_setting_configmultis
         return true;
     }
 }
+
+/**
+ * A text field that only accepts positive numbers up to a configured maximum.
+ *
+ * @package    core
+ * @copyright  2013 onwards Remote-Learner {@link http://www.remote-learner.ca/}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_setting_configtextnumeric extends admin_setting_configtext {
+    /** @var int default field size */
+    public $maxnumber;
+
+    /**
+     * Config text constructor
+     * @param string $name unique ascii name, either 'mysetting' for settings that in config, or 'myplugin/mysetting' for ones in config_plugins.
+     * @param string $visiblename localised
+     * @param string $description long localised info
+     * @param string $defaultsetting
+     * @param int $maxnumber the maximum mumber accepted
+     * @param int $size default field size
+     */
+    public function __construct($name, $visiblename, $description, $defaultsetting, $maxnumber = 10000, $size = null) {
+        parent::__construct($name, $visiblename, $description, $defaultsetting);
+
+        $this->paramtype = PARAM_INT;
+
+        if (!is_null($size)) {
+            $this->size  = $size;
+        } else {
+            $this->size  = ($this->paramtype === PARAM_INT) ? 5 : 30;
+        }
+
+        if (!is_int($maxnumber)) {
+            $this->maxnumber = 10000;
+        } else {
+            $this->maxnumber = abs($maxnumber);
+        }
+
+
+    }
+
+    /**
+     * Validate data before storage.
+     * @param string $data the value input and submitted by the user.
+     * @return mixed true if ok string if error found.
+     */
+    public function validate($data) {
+        $cleaned = clean_param($data, $this->paramtype);
+        // Implicit conversion to string is needed to do exact comparison.
+        if ("$data" !== "$cleaned") {
+            return get_string('validateerror', 'admin');
+        } else {
+            // Check if the cleaned value is less than or equal to the configured maximum number.
+            if ($cleaned <= $maxnumber) {
+                return true;
+            }
+
+            // TODO: Print a validation error message
+        }
+    }
+}
