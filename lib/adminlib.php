@@ -4744,6 +4744,87 @@ class admin_setting_special_gradeexport extends admin_setting_configmulticheckbo
 
 
 /**
+ * A setting for setting the maximum grade value. Must be an integer between 1 and 10000.
+ *
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_setting_special_gradepointmax extends admin_setting_configtext {
+
+    /**
+     * Config gradepointmax constructor
+     *
+     * @param string $name unique ascii name, either 'mysetting' for settings that in config, or 'myplugin/mysetting' for ones in config_plugins.
+     * @param string $visiblename localised
+     * @param string $description long localised info
+     * @param string $defaultsetting
+     * @param mixed $paramtype int means PARAM_XXX type, string is a allowed format in regex
+     * @param int $size default field size
+     */
+    public function __construct($name = '', $visiblename = '', $description = '', $defaultsetting = '', $paramtype = PARAM_INT, $size = 5) {
+        $name = 'gradepointmax';
+        $visiblename = get_string('gradepointmax', 'grades');
+        $description = get_string('gradepointmax_help', 'grades');
+        $defaultsetting = 100;
+        $paramtype = PARAM_INT;
+        $size = 5;
+        parent::__construct($name, $visiblename, $description, $defaultsetting, $paramtype, $size);
+    }
+
+    /**
+     * Save the selected setting
+     *
+     * @param string $data The selected site
+     * @return string empty string or error message
+     */
+    public function write_setting($data) {
+        if ($data === '') {
+            $data = (int)$this->defaultsetting;
+        } else {
+            $data = $data;
+        }
+        return parent::write_setting($data);
+    }
+
+    /**
+     * Validate data before storage
+     * @param string $data The submitted data
+     * @return bool|string true if ok, string if error found
+     */
+    public function validate($data) {
+        if ((string)(int)$data === $data && $data > 0 && $data <= 10000) {
+            return true;
+        } else {
+            return get_string('gradepointmax_validateerror', 'grades');
+        }
+    }
+
+    /**
+     * Return an XHTML string for the setting
+     * @param array $data Associative array of value=>xx, forced=>xx, adv=>xx
+     * @param string $query search query to be highlighted
+     * @return string XHTML to display control
+     */
+    public function output_html($data, $query = '') {
+        $default = $this->get_defaultsetting();
+
+        $attr = array(
+            'type' => 'text',
+            'size' => $this->size,
+            'id' => $this->get_id(),
+            'name' => $this->get_full_name(),
+            'value' => s($data),
+            'maxlength' => '5'
+        );
+        $input = html_writer::empty_tag('input', $attr);
+
+        $attr = array('class' => 'form-text defaultsnext');
+        $div = html_writer::tag('div', $input, $attr);
+        return format_admin_setting($this, $this->visiblename, $div, $this->description, true, '', $default, $query);
+    }
+}
+
+
+/**
  * Grade category settings
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
